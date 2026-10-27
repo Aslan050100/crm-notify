@@ -12,7 +12,7 @@ echo [2/3] Устанавливаю библиотеки (1-3 минуты, не
 .venv\Scripts\python -m pip install --upgrade pip
 .venv\Scripts\python -m pip install -r requirements.txt
 echo [3/3] Проверяю ...
-.venv\Scripts\python -c "import requests, yaml, tzdata; print(Библиотеки установлены)"
+.venv\Scripts\python -c "import requests, yaml, tzdata; print('Библиотеки установлены')"
 if errorlevel 1 (echo. & echo ОШИБКА: библиотеки не установились. Пришлите скрин этого окна. & pause & exit /b 1)
 if not exist .env (copy .env.example .env >nul & echo Создан файл .env — откройте его в Блокноте и впишите токен amoCRM и ключ Wazzup.)
 echo.
