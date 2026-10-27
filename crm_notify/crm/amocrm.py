@@ -1,6 +1,6 @@
 """Коннектор amoCRM (API v4, долгосрочный токен внешней интеграции).
 
-Настройки клиента (clients/<id>.yaml → crm):
+Настройки клиента (clients/<id>.toml → crm):
     type: amocrm
     subdomain: bo4smag
     token: ${MYDENT_AMO_TOKEN}

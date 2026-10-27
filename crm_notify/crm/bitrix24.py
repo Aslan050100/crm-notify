@@ -2,7 +2,7 @@
 
 ⚠️ Черновой вариант: ещё не проверен на реальном портале (подключим с Sapa Dent).
 
-Настройки клиента (clients/<id>.yaml → crm):
+Настройки клиента (clients/<id>.toml → crm):
     type: bitrix24
     webhook: ${SAPADENT_B24_WEBHOOK}     # https://<портал>.bitrix24.kz/rest/<user>/<код>/
     opt_out_field: UF_CRM_...            # необязательно, пользовательское поле «да/нет»

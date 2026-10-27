@@ -1,0 +1,47 @@
+# Клиника MyDent (Астана) — amoCRM + Wazzup, серый WhatsApp 7747
+# Значения вида ${ИМЯ} берутся из файла .env
+title = "MyDent"
+enabled = true
+timezone = "Asia/Almaty"
+
+[crm]
+type = "amocrm"
+subdomain = "${MYDENT_AMO_SUBDOMAIN}"
+token = "${MYDENT_AMO_TOKEN}"
+birthday_field = "День Рождения"
+opt_out_field = "Запрет автоматических сообщений"
+
+[crm.marks]
+birthday = "Поздравлен с ДР (год)"
+
+[channel]
+type = "wazzup"
+api_key = "${MYDENT_WAZZUP_API_KEY}"
+phone = "${MYDENT_WAZZUP_PHONE}"
+transport = "whatsapp"
+
+[scenarios.birthday]
+enabled = true
+send_at = "11:00"        # время отправки
+send_until = "20:00"     # позже этого времени не отправляем
+max_per_run = 50
+delay_seconds = [15, 45] # пауза между сообщениями, секунд
+note = "Отправлено поздравление с днём рождения (crm-notify)"
+greeting_with_name = "{first_name}, с днём рождения!"
+greeting_without_name = "С днём рождения!"
+template = """
+🎉🥳 {greeting} 🥳🎉
+
+Команда стоматологической клиники My Dent спешит поздравить Вас и пожелать отличного настроения, крепкого здоровья и сияющей улыбки 😁🌸
+
+🎁 В честь праздника дарим Вам персональную скидку 50% на профессиональную чистку зубов 🦷✨
+⏳ Скидкой можно воспользоваться в течение 14 дней.
+
+ℹ️ Скидка не распространяется на консультации и рентген-снимки.
+
+С радостью позаботимся о Вашей улыбке и будем ждать Вас в гости 💙😊
+📍 ул. С. Сейфуллина, 8
+🕘 Работаем каждый день с 9:00 до 20:00 — без выходных!
+☎️ +7 747 530 77 47
+📲 https://www.instagram.com/mydent_astana/
+"""

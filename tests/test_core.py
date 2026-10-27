@@ -152,3 +152,21 @@ def test_birthday_live_mode_and_no_repeat(tmp_path):
     res2 = birthday.run(CLIENT, FakeCRM(_people()), ch2, store, TODAY, "live", sleep=lambda s: None)
     assert [p for p, _ in ch2.sent] == ["77088888888"]
     assert res2.skipped["уже поздравлен в этом году"] == 3
+
+
+# ---------- настройки клиента ----------
+def test_mydent_config_loads_and_renders(monkeypatch):
+    from crm_notify.config import load_clients
+
+    for k, v in {"MYDENT_AMO_SUBDOMAIN": "bo4smag", "MYDENT_AMO_TOKEN": "t",
+                 "MYDENT_WAZZUP_API_KEY": "k", "MYDENT_WAZZUP_PHONE": "77475307747"}.items():
+        monkeypatch.setenv(k, v)
+    (client,) = load_clients(only="mydent")
+    assert client["crm"]["subdomain"] == "bo4smag"
+    assert client["crm"]["marks"]["birthday"] == "Поздравлен с ДР (год)"
+    cfg = client["scenarios"]["birthday"]
+    with_name = birthday.build_text(cfg, Person("1", "Акнур Айтбекова", "Акнур"))
+    no_name = birthday.build_text(cfg, Person("2", "77011111111", "77011111111"))
+    assert with_name.startswith("🎉🥳 Акнур, с днём рождения! 🥳🎉")
+    assert no_name.startswith("🎉🥳 С днём рождения! 🥳🎉")
+    assert "+7 747 530 77 47" in with_name and with_name.endswith("instagram.com/mydent_astana/")

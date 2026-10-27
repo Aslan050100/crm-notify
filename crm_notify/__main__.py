@@ -157,7 +157,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
     for name in ("check", "setup", "run", "due", "serve", "log"):
         p = sub.add_parser(name)
-        p.add_argument("--client", help="id клиента (имя файла в clients/ без .yaml)")
+        p.add_argument("--client", help="id клиента (имя файла в clients/ без .toml)")
         if name == "run":
             p.add_argument("--date", help="выполнить за другую дату, ГГГГ-ММ-ДД (для проверки)")
         if name == "log":

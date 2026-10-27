@@ -1,6 +1,6 @@
-"""Загрузка настроек: клиенты из clients/*.yaml, секреты из .env / переменных окружения.
+"""Загрузка настроек: клиенты из clients/*.toml, секреты из .env / переменных окружения.
 
-В yaml можно ссылаться на переменные окружения так: ${MYDENT_AMO_TOKEN}.
+В настройках можно ссылаться на переменные окружения так: ${MYDENT_AMO_TOKEN}.
 Секреты храним только в .env (он не попадает в git).
 """
 
@@ -10,7 +10,7 @@ import os
 import re
 from pathlib import Path
 
-import yaml
+import tomllib
 
 ROOT = Path(__file__).resolve().parent.parent
 _VAR = re.compile(r"\$\{([A-Z0-9_]+)\}")
@@ -51,12 +51,15 @@ class ConfigError(Exception):
 
 
 def load_clients(clients_dir: Path | None = None, only: str | None = None) -> list[dict]:
-    """Список включённых клиентов. Каждый — dict из своего yaml-файла."""
+    """Список включённых клиентов. Каждый — dict из своего toml-файла."""
     load_dotenv()
     clients_dir = clients_dir or ROOT / "clients"
     result = []
-    for path in sorted(clients_dir.glob("*.yaml")):
-        raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    for path in sorted(clients_dir.glob("*.toml")):
+        try:
+            raw = tomllib.loads(path.read_text(encoding="utf-8-sig"))
+        except tomllib.TOMLDecodeError as exc:
+            raise ConfigError(f"Ошибка в файле {path.name}: {exc}") from exc
         raw.setdefault("id", path.stem)
         if only and raw["id"] != only:
             continue

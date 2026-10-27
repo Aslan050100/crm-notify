@@ -1,6 +1,6 @@
 """Отправка сообщений через Wazzup API v3.
 
-Настройки клиента (clients/<id>.yaml → channel):
+Настройки клиента (clients/<id>.toml → channel):
     type: wazzup
     api_key: ${MYDENT_WAZZUP_API_KEY}
     phone: ${MYDENT_WAZZUP_PHONE}     # номер канала, с которого отправляем, напр. 77475307747
