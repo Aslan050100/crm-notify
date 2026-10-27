@@ -1,5 +1,5 @@
 @echo off
 chcp 65001 >nul
 cd /d "%~dp0"
-rem Этот файл запускает планировщик Windows. Выполняет только то, чьё время пришло и что ещё не сделано сегодня.
+rem Started by Windows Task Scheduler: runs only what is due today and not yet done.
 .venv\Scripts\python -m crm_notify due
