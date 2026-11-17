@@ -170,3 +170,29 @@ def test_mydent_config_loads_and_renders(monkeypatch):
     assert with_name.startswith("🎉🥳 Акнур, с днём рождения! 🥳🎉")
     assert no_name.startswith("🎉🥳 С днём рождения! 🥳🎉")
     assert "+7 747 530 77 47" in with_name and with_name.endswith("instagram.com/mydent_astana/")
+
+
+# ---------- язык ----------
+def test_amo_language_field():
+    contact = {"id": 1, "name": "Айгүл", "first_name": "Айгүл", "custom_fields_values": [
+        {"field_id": 720115, "values": [{"value": 520102800}]},
+        {"field_id": 784288, "values": [{"value": "Қазақша", "enum_id": 628148}]},
+    ]}
+    p = AmoCRM._to_person(contact, 720115, None, {}, 784288, {"қазақша": "kk"})
+    assert p.lang == "kk"
+    assert AmoCRM._to_person(contact, 720115, None, {}).lang == ""
+
+
+def test_mydent_kazakh_text(monkeypatch):
+    from crm_notify.config import load_clients
+
+    for k, v in {"MYDENT_AMO_SUBDOMAIN": "bo4smag", "MYDENT_AMO_TOKEN": "t",
+                 "MYDENT_WAZZUP_API_KEY": "k", "MYDENT_WAZZUP_PHONE": "77475307747"}.items():
+        monkeypatch.setenv(k, v)
+    (client,) = load_clients(only="mydent")
+    assert client["crm"]["language_map"] == {"Қазақша": "kk"}
+    cfg = client["scenarios"]["birthday"]
+    kk = birthday.build_text(cfg, Person("1", "Айгүл", "Айгүл", lang="kk"))
+    ru = birthday.build_text(cfg, Person("1", "Айгүл", "Айгүл"))
+    assert kk.startswith("🎉🥳 Айгүл, туған күніңізбен! 🥳🎉") and "Сейфуллин көшесі" in kk
+    assert ru.startswith("🎉🥳 Айгүл, с днём рождения! 🥳🎉")

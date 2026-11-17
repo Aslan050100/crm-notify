@@ -8,6 +8,7 @@
     delay_seconds: [15, 45]       # пауза между сообщениями (бережём серый номер)
     greeting_with_name: "{first_name}, с днём рождения!"
     greeting_without_name: "С днём рождения!"
+    lang.kk: {greeting_with_name, greeting_without_name, template}   # казахская версия
     template: |
       🎉🥳 {greeting} 🥳🎉
       ...
@@ -47,7 +48,14 @@ def clean_first_name(person: Person) -> str:
     return word[:1].upper() + word[1:]
 
 
+def text_cfg(cfg: dict, person: Person) -> dict:
+    """Настройки текста с учётом языка контакта: scenarios.birthday.lang.<код> перекрывает русские."""
+    over = (cfg.get("lang") or {}).get(person.lang or "")
+    return {**cfg, **over} if over else cfg
+
+
 def build_text(cfg: dict, person: Person) -> str:
+    cfg = text_cfg(cfg, person)
     first = clean_first_name(person)
     greeting = (
         render(cfg.get("greeting_with_name", "{first_name}, с днём рождения!"), first_name=first)
@@ -146,12 +154,13 @@ def _write_report(client_id: str, today: dt.date, mode: str, people: list[Person
     path = folder / f"{today.isoformat()}_{client_id}_birthday_{mode}.csv"
     with path.open("w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f, delimiter=";")
-        w.writerow(["ID в CRM", "Имя в CRM", "Обращение", "Телефон", "Дата рождения", "Исполняется", "Текст"])
+        w.writerow(["ID в CRM", "Имя в CRM", "Обращение", "Телефон", "Дата рождения", "Исполняется", "Язык", "Текст"])
         for p in people:
             w.writerow([
                 p.crm_id, p.name, clean_first_name(p) or "(без имени)", "+" + p.phone,
                 p.birthday.strftime("%d.%m.%Y") if p.birthday else "",
                 age_on(p.birthday, today) if p.birthday and p.birthday.year > 1900 else "",
+                "казахский" if p.lang == "kk" else "русский",
                 build_text(cfg, p),
             ])
     return str(path)

@@ -18,6 +18,7 @@ class Person:
     birthday: dt.date | None = None
     opted_out: bool = False  # «Запрет автоматических сообщений»
     marks: dict[str, str] = field(default_factory=dict)  # отметки сценариев, напр. {"birthday": "2026"}
+    lang: str = ""  # язык сообщений: "" — по умолчанию (русский), "kk" — казахский
 
     @property
     def phone(self) -> str | None:

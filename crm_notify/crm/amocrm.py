@@ -8,6 +8,8 @@
     opt_out_field: "Запрет автоматических сообщений"   # чекбокс, необязательно
     marks:
       birthday: "Поздравлен с ДР (год)"         # поле-отметка; создаётся командой setup
+    language_field: "Язык"                      # список у контакта, необязательно
+    language_map: {"Қазақша": "kk"}             # значение списка → код языка (пусто = русский)
 """
 
 from __future__ import annotations
@@ -71,13 +73,15 @@ class AmoCRM(CRMConnector):
         bday_id = self._require_field(self.cfg.get("birthday_field", "День Рождения"), "дата рождения")
         opt_id = self.field_id(self.cfg.get("opt_out_field"))
         mark_ids = {k: self.field_id(v) for k, v in (self.cfg.get("marks") or {}).items()}
+        lang_id = self.field_id(self.cfg.get("language_field"))
+        lang_map = {str(k).strip().lower(): v for k, v in (self.cfg.get("language_map") or {}).items()}
 
         page = 1
         while True:
             data = self.http.get("contacts", params={"limit": 250, "page": page})
             contacts = (data or {}).get("_embedded", {}).get("contacts", [])
             for c in contacts:
-                person = self._to_person(c, bday_id, opt_id, mark_ids)
+                person = self._to_person(c, bday_id, opt_id, mark_ids, lang_id, lang_map)
                 if person.birthday:
                     yield person
             if len(contacts) < 250:
@@ -85,7 +89,14 @@ class AmoCRM(CRMConnector):
             page += 1
 
     @staticmethod
-    def _to_person(c: dict, bday_id: int, opt_id: int | None, mark_ids: dict[str, int | None]) -> Person:
+    def _to_person(
+        c: dict,
+        bday_id: int,
+        opt_id: int | None,
+        mark_ids: dict[str, int | None],
+        lang_id: int | None = None,
+        lang_map: dict[str, str] | None = None,
+    ) -> Person:
         values = {f["field_id"]: f for f in (c.get("custom_fields_values") or [])}
         phones: list[str] = []
         for f in c.get("custom_fields_values") or []:
@@ -107,6 +118,10 @@ class AmoCRM(CRMConnector):
         for scenario, fid in mark_ids.items():
             if fid and fid in values and values[fid].get("values"):
                 marks[scenario] = str(values[fid]["values"][0].get("value", "")).strip()
+        lang = ""
+        if lang_id and lang_id in values and values[lang_id].get("values"):
+            raw = str(values[lang_id]["values"][0].get("value", "")).strip().lower()
+            lang = (lang_map or {}).get(raw, "")
         return Person(
             crm_id=str(c["id"]),
             name=c.get("name") or "",
@@ -116,6 +131,7 @@ class AmoCRM(CRMConnector):
             birthday=birthday,
             opted_out=opted_out,
             marks=marks,
+            lang=lang,
         )
 
     # ---------- запись ----------
